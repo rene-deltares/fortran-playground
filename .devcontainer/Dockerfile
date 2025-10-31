@@ -22,6 +22,16 @@ microdnf install --assumeyes \
     intel-oneapi-common-vars intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran intel-oneapi-mkl-devel intel-oneapi-mpi-devel
 EOF
 
+RUN --mount=type=cache,target=/var/cache/cmake <<"EOF"
+CMAKE_INSTALLER=/var/cache/cmake/cmake-3.31.9-linux-x86_64.sh
+curl -LsSf -C - -o $CMAKE_INSTALLER https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh
+mkdir -p /opt/cmake
+
+pushd $(dirname $CMAKE_INSTALLER)
+sh $(basename $CMAKE_INSTALLER) --skip-license --prefix=/opt/cmake
+popd
+EOF
+
 RUN cat >> /etc/bashrc <<"EOF"
 # Source Intel OneApi 
 source /opt/intel/oneapi/setvars.sh
@@ -30,6 +40,9 @@ source /opt/intel/oneapi/setvars.sh
 export FC=ifx
 export CXX=icpx
 export CC=icx
+
+# Add CMake to PATH
+export PATH=/opt/cmake/bin:$PATH
 EOF
 
 # Create non-root user and grant it sudo privileges:
@@ -67,7 +80,7 @@ ADD --chmod=755 \
     /home/dev/.local/bin/
 
 # Configure interactive bash environment.
-RUN cat >> /home/dev/bashrc <<EOF
+RUN cat >> /home/dev/.bashrc <<EOF
 # Bash history
 export PROMPT_COMMAND='history -a'
 export HISTFILE=/home/dev/.history/.bash_history
