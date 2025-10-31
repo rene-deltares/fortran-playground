@@ -1,0 +1,25 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "mounts": [
+        // Persist the bash history into a Docker volume, so you don't lose your bash history when restarting the container.
+        // See: https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+        {
+            "type": "volume",
+            "source": "fortran-playground-history",
+            "target": "/home/dev/.history"
+        }
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-containers",
+                "ms-vscode.cmake-tools",
+                "fortran-lang.linter-gfortran",
+                "ms-vscode.cpptools",
+                "ms-vscode.hexeditor"
+            ]
+        }
+    }
+}
