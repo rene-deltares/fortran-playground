@@ -1,3 +1,6 @@
 program hello_world
-    print *, "Hello World!"
+    use m_greet, only: greet
+    implicit none
+
+    print *, greet("Rene")
 end program hello_world
