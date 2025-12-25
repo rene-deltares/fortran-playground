@@ -1,20 +1,20 @@
 # check if FILENAME is an absolute path and
 # return the absolute path of the file and
 # the container directory
-function (F90TWCHKPATH FILENAME RETFILENAMEFULL RETFILEDIRECTORY)
+function(F90TWCHKPATH FILENAME RETFILENAMEFULL RETFILEDIRECTORY)
 
     get_filename_component(filedir "${FILENAME}" DIRECTORY)
-    if ("${filedir}" STREQUAL "")
-        set (${RETFILENAMEFULL} "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}" PARENT_SCOPE)
-        set (${RETFILEDIRECTORY} "${CMAKE_CURRENT_SOURCE_DIR}" PARENT_SCOPE)
+    if("${filedir}" STREQUAL "")
+        set(${RETFILENAMEFULL} "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}" PARENT_SCOPE)
+        set(${RETFILEDIRECTORY} "${CMAKE_CURRENT_SOURCE_DIR}" PARENT_SCOPE)
     else()
-        string (FIND ${filedir} ${CMAKE_CURRENT_SOURCE_DIR} chk)
-        if (chk EQUAL -1)
-            set (${RETFILENAMEFULL} "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}" PARENT_SCOPE)
-            set (${RETFILEDIRECTORY} "${CMAKE_CURRENT_SOURCE_DIR}/${filedir}" PARENT_SCOPE)
+        string(FIND ${filedir} ${CMAKE_CURRENT_SOURCE_DIR} chk)
+        if(chk EQUAL -1)
+            set(${RETFILENAMEFULL} "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}" PARENT_SCOPE)
+            set(${RETFILEDIRECTORY} "${CMAKE_CURRENT_SOURCE_DIR}/${filedir}" PARENT_SCOPE)
         else()
-            set (${RETFILENAMEFULL} ${FILENAME} PARENT_SCOPE)
-            set (${RETFILEDIRECTORY} ${dir} PARENT_SCOPE)
+            set(${RETFILENAMEFULL} ${FILENAME} PARENT_SCOPE)
+            set(${RETFILEDIRECTORY} ${dir} PARENT_SCOPE)
         endif()
     endif()
 endfunction()
@@ -35,12 +35,12 @@ function(F90TWFPP INFILE OUTFILE)
     cmake_parse_arguments(PARSE_ARGV 2 ${prefix} "${flags}" "${singleValues}" "${multiValues}")
 
     foreach(dir ${FPP_INCLUDES})
-        string (PREPEND dir ${FPP_SWITCH} I)
-        list (APPEND INCL ${dir})
+        string(PREPEND dir ${FPP_SWITCH} I)
+        list(APPEND INCL ${dir})
     endforeach()
     foreach(def ${FPP_DEFINITIONS})
-        string (PREPEND def ${FPP_SWITCH} D)
-        list (APPEND DEFS ${def})
+        string(PREPEND def ${FPP_SWITCH} D)
+        list(APPEND DEFS ${def})
     endforeach()
 
     set(FPPOPTS "${FPP_OPTIONS}")
@@ -48,7 +48,7 @@ function(F90TWFPP INFILE OUTFILE)
     set(FPPINCL "${INCL}")
     if(CMAKE_SYSTEM_NAME STREQUAL Windows)
         string(REPLACE ";" " " FPPINCL "${INCL}")
-        find_program (POWERSHELL_EXE NAMES "powershell.exe" REQUIRED)
+        find_program(POWERSHELL_EXE NAMES "powershell.exe" REQUIRED)
         add_custom_command(
             OUTPUT ${OUTFILE}
             COMMAND ${POWERSHELL_EXE} -Command " \" (${FPP_EXE} ${FPPOPTS} ${FPPDEFS} ${FPPINCL} ${INFILE})  -replace ';', \\\"`n\\\" | select-string -pattern '^#' -notmatch | Set-Content -Path ${OUTFILE} \" "
@@ -56,8 +56,8 @@ function(F90TWFPP INFILE OUTFILE)
             COMMENT "precompile ${INFILE}"
         )
     else()
-        find_program (SED_EXE NAMES "sed" REQUIRED)
-        find_program (TR_EXE NAMES "tr" REQUIRED)
+        find_program(SED_EXE NAMES "sed" REQUIRED)
+        find_program(TR_EXE NAMES "tr" REQUIRED)
         add_custom_command(
             OUTPUT ${OUTFILE}
             COMMAND ${FPP_EXE} ${FPPOPTS} ${FPPDEFS} ${FPPINCL} ${INFILE} | ${SED_EXE} \"/^[ \\t]*\#/d\" | ${TR_EXE} \"\;\" \"\\n\" > ${OUTFILE}
@@ -82,7 +82,7 @@ function(F90TWF2H INFILES OUTFILE)
     cmake_parse_arguments(PARSE_ARGV 0 ${prefix} "${flags}" "${singleValues}" "${multiValues}")
 
     if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-        find_program (POWERSHELL_EXE NAMES "powershell.exe" REQUIRED)
+        find_program(POWERSHELL_EXE NAMES "powershell.exe" REQUIRED)
         add_custom_command(
             OUTPUT ${F2H_OUTFILE}
             COMMAND ${POWERSHELL_EXE} -Command " \" ( ( cat ${F2H_INFILES} ) | select-string -pattern '^[ \\t]*[!cC][\\$$][fF]90[tT][wW]' ) -replace '^[ \\t]*[!cC][\\$$][fF]90[tT][wW][ \\t]', '' | Set-Content -Path ${F2H_OUTFILE} \" "
@@ -90,7 +90,7 @@ function(F90TWF2H INFILES OUTFILE)
             COMMENT "process ${F2H_INFILES}"
         )
     else()
-        find_program (SED_EXE NAMES "sed" REQUIRED)
+        find_program(SED_EXE NAMES "sed" REQUIRED)
         add_custom_command(
             OUTPUT ${F2H_OUTFILE}
             COMMAND ${SED_EXE} '/^[ \\t]*[!cC]\$$[fF]90[tT][wW] /!d \; s/.*[!cC]\$$[fF]90[tT][wW]\\\(.*\\\)$$/\\1/' ${F2H_INFILES}  >  ${F2H_OUTFILE}
@@ -120,14 +120,14 @@ function(F90TWFPPFILES)
     list(LENGTH FPP_INFILES inlen)
     # if the list of the output files is not given then create
     # it based on the given input files.
-    if (NOT ${outlen} EQUAL ${inlen})
+    if(NOT ${outlen} EQUAL ${inlen})
         foreach(fppinfile ${FPP_INFILES})
             get_filename_component(f90filename "${fppinfile}" NAME_WE)
-            set (f90file "${FPP_OUTDIR}/${f90filename}.f90")
-            list (APPEND OUTFILES ${dir})
+            set(f90file "${FPP_OUTDIR}/${f90filename}.f90")
+            list(APPEND OUTFILES ${dir})
         endforeach()
     else()
-        set (OUTFILES ${FPP_OUTFILES})
+        set(OUTFILES ${FPP_OUTFILES})
     endif()
 
     # setup files preprocessing
@@ -135,7 +135,7 @@ function(F90TWFPPFILES)
     foreach(val RANGE ${len})
         list(GET FPP_INFILES  ${val} fppfile)
         list(GET OUTFILES  ${val} f90file)
-        F90TWFPP ("${fppfile}" "${f90file}"
+        F90TWFPP("${fppfile}" "${f90file}"
             EXE ${FPP_EXE}
             SWITCH ${FPP_SWITCH}
             OPTIONS ${FPP_OPTIONS}
@@ -165,21 +165,17 @@ function(F90TWTEST NAME)
     set(multiValues CFILES F90FILES FPPFILES F2HFILES OPTIONS LIBRARIES INCLUDES MODULES DEFINITIONS)
 
     include(CMakeParseArguments)
-    cmake_parse_arguments(PARSE_ARGV 1 ${prefix}
-                    "${flags}"
-                    "${singleValues}"
-                    "${multiValues}"
-        )
+    cmake_parse_arguments(PARSE_ARGV 1 ${prefix} "${flags}" "${singleValues}" "${multiValues}")
 
     list(APPEND FTW_INCLUDES ${f90tw_INCLUDE_DIR})
     list(APPEND FTW_MODULES ${f90tw_MODULES_DIR})
 
-    set (FLIBNAME "${NAME}_f90")
-    set (F2HTRGNAME "${NAME}_f2h")
+    set(FLIBNAME "${NAME}_f90")
+    set(F2HTRGNAME "${NAME}_f2h")
 
     # create the fortran header files
-    if (NOT "${FTW_F2HFILES}" STREQUAL "")
-        if (NOT "${FTW_F2HNAME}" STREQUAL "")
+    if(NOT "${FTW_F2HFILES}" STREQUAL "")
+        if(NOT "${FTW_F2HNAME}" STREQUAL "")
             set(F2HNAME ${FTW_F2HNAME})
         else()
             list(GET FTW_F2HFILES 0 firstfile)
@@ -187,7 +183,7 @@ function(F90TWTEST NAME)
             set(F2HNAME "${firstfilename}.h")
         endif()
         set(F2HFILE "${CMAKE_CURRENT_BINARY_DIR}/${F2HNAME}")
-        F90TWF2H (INFILES ${FTW_F2HFILES} OUTFILE ${F2HFILE})
+        F90TWF2H(INFILES ${FTW_F2HFILES} OUTFILE ${F2HFILE})
         add_custom_target(${F2HTRGNAME} ALL DEPENDS ${F2HFILE})
     else()
         set(F2HFILE)
@@ -198,35 +194,35 @@ function(F90TWTEST NAME)
         get_filename_component(f90filename "${fppinfile}" NAME_WE)
         get_filename_component(fppfilename "${fppinfile}" NAME)
 
-        F90TWCHKPATH (${fppinfile} fppinfilefull fppinfiledir)
-        list (FIND FPPINCLDS ${fppinfiledir} chk)
-        if (chk EQUAL -1)
-          list (APPEND FPPINCLDS ${fppinfiledir})
+        F90TWCHKPATH(${fppinfile} fppinfilefull fppinfiledir)
+        list(FIND FPPINCLDS ${fppinfiledir} chk)
+        if(chk EQUAL -1)
+          list(APPEND FPPINCLDS ${fppinfiledir})
         endif()
 
-        set (f90file "${FTW_OUTDIR}/${f90filename}.f90")
-        list (APPEND XF90FILES ${f90file})
-        list (APPEND XFPPFILES ${fppinfilefull})
+        set(f90file "${FTW_OUTDIR}/${f90filename}.f90")
+        list(APPEND XF90FILES ${f90file})
+        list(APPEND XFPPFILES ${fppinfilefull})
     endforeach()
-    F90TWFPPFILES (
+    F90TWFPPFILES(
         INFILES ${XFPPFILES} OUTFILES ${XF90FILES}
         EXE ${FTW_EXE} OPTIONS ${FTW_OPTIONS}  SWITCH ${FTW_SWITCH}
         INCLUDES ${FTW_INCLUDES} DEFINITIONS ${FTW_DEFINITIONS}
         DEPENDS ${F2HFILE}
     )
 
-    add_library (${FLIBNAME} STATIC ${F2HFILE} ${XF90FILES} ${FTW_F90FILES})
+    add_library(${FLIBNAME} STATIC ${F2HFILE} ${XF90FILES} ${FTW_F90FILES})
     set_property(TARGET ${FLIBNAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
     target_include_directories(${FLIBNAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${FTW_INCLUDES} ${FTW_MODULES})
     set_target_properties(${FLIBNAME} PROPERTIES Fortran_MODULE_DIRECTORY ${FTW_MODULES})
     set_property(TARGET ${FLIBNAME}
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${XF90FILES}
     )
-    if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
+    if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
         target_compile_options(${FLIBNAME} PRIVATE "-ffree-line-length-none")
     endif()
     target_link_libraries(${FLIBNAME} PUBLIC ${FTW_LIBRARIES} f90tw_gtest)
-    if (NOT "${FTW_F2HFILES}" STREQUAL "")
+    if(NOT "${FTW_F2HFILES}" STREQUAL "")
         add_dependencies(${FLIBNAME} ${F2HTRGNAME})
     endif()
 
@@ -244,9 +240,9 @@ endfunction()
 # systems, cl.exe may be abailable. On mac os cpp in interface to clang with
 # "-traditional-cpp" locked. To avoid this we use directly the clang frond end.
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-    find_program (FPP_EXE NAMES cpp.exe clang.exe cl.exe REQUIRED)
+    find_program(FPP_EXE NAMES cpp.exe clang.exe cl.exe REQUIRED)
 else()
-    find_program (FPP_EXE NAMES clang cpp REQUIRED)
+    find_program(FPP_EXE NAMES clang cpp REQUIRED)
 endif()
 
 # we have prioritized clang in find_program. otherwise we
@@ -256,15 +252,15 @@ execute_process(
     COMMAND ${FPP_EXE} --version
     OUTPUT_VARIABLE FPPEXETMP
 )
-if (FPPEXETMP MATCHES LLVM AND (NOT FPP_EXE MATCHES clang))
+if(FPPEXETMP MATCHES LLVM AND (NOT FPP_EXE MATCHES clang))
     unset(FPP_EXE CACHE)
-    find_program (FPP_EXE NAMES clang REQUIRED)
+    find_program(FPP_EXE NAMES clang REQUIRED)
 endif()
 
 # resolve preprocessor options
-if (NOT FPP_EXE)
-    message (FATAL_ERROR "C preprocessor was not found")
-elseif (FPP_EXE MATCHES "clang*")
+if(NOT FPP_EXE)
+    message(FATAL_ERROR "C preprocessor was not found")
+elseif(FPP_EXE MATCHES "clang*")
     set(FPP_ID LLVM)
     set(FPP_OPTIONS -cc1 -E)
     set(FPP_SWITCH -)
@@ -287,19 +283,19 @@ message(STATUS "Found cpp: ${FPP_EXE} of ${FPP_ID} flavor")
 
 
 add_library(f90tw_gtest STATIC gtest_assertions.cpp)
-set_property (TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(f90tw_gtest PUBLIC ${gtest_INCLUDE_DIR})
 target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest gtest)
 target_compile_definitions(f90tw_gtest PUBLIC f90twi_gtest)
 
-set (file2fpp "${CMAKE_CURRENT_SOURCE_DIR}/assertions_gtest.fpp")
-set (file2 "${CMAKE_CURRENT_BINARY_DIR}/assertions_gtest.f90")
+set(file2fpp "${CMAKE_CURRENT_SOURCE_DIR}/assertions_gtest.fpp")
+set(file2 "${CMAKE_CURRENT_BINARY_DIR}/assertions_gtest.f90")
 add_library(f90twi_gtest OBJECT "${file2}")
 set_property(TARGET f90twi_gtest
     APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${file2}"
 )
 
-F90TWFPP ("${file2fpp}" "${file2}"
+F90TWFPP("${file2fpp}" "${file2}"
     EXE ${FPP_EXE}
     OPTIONS ${FPP_OPTIONS}
     SWITCH ${FPP_SWITCH}
