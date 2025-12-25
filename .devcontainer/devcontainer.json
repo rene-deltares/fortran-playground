@@ -18,7 +18,8 @@
                 "ms-vscode.cmake-tools",
                 "fortran-lang.linter-gfortran",
                 "ms-vscode.cpptools",
-                "ms-vscode.hexeditor"
+                "ms-vscode.hexeditor",
+                "GitHub.copilot"
             ]
         }
     }

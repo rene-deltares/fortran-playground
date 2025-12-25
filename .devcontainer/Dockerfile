@@ -32,6 +32,8 @@ sh $(basename $CMAKE_INSTALLER) --skip-license --prefix=/opt/cmake
 popd
 EOF
 
+ENV PATH=/opt/cmake/bin:${PATH}
+
 RUN cat >> /etc/bashrc <<"EOF"
 # Source Intel OneApi 
 source /opt/intel/oneapi/setvars.sh
@@ -41,8 +43,32 @@ export FC=ifx
 export CXX=icpx
 export CC=icx
 
-# Add CMake to PATH
-export PATH=/opt/cmake/bin:$PATH
+# Add /usr/local/lib64 to LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
+export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig:$PKG_CONFIG_PATH
+EOF
+
+RUN --mount=type=cache,target=/var/cache/googletest <<"EOF"
+source /root/.bashrc
+pushd /var/cache/googletest
+if [[ $(git describe --tags --exact-match 2>/dev/null) != 'v1.17.0' ]]; then
+    git clone --depth=1 --branch=v1.17.0 https://github.com/google/googletest.git .
+fi
+
+cmake -S . -B build -DBUILD_GMOCK=OFF -DCMAKE_CXX_COMPILER=icpx
+cmake --build build --parallel
+cmake --build build --target install
+popd
+EOF
+
+RUN <<"EOF"
+source /root/.bashrc
+mkdir -p /opt/f90tw
+pushd /opt/f90tw
+git clone --depth=1 https://github.com/loudove/f90tw .
+cmake -S . -B build -DBOOSTFWK=OFF -DGTESTFWK=ON -DEXAMPLES=ON -DCMAKE_CXX_COMPILER=icpx -DCMAKE_Fortran_COMPILER=ifx
+cmake --build build --target install
+popd
 EOF
 
 # Create non-root user and grant it sudo privileges:

@@ -1,0 +1,61 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "debug",
+            "displayName": "Debug",
+            "binaryDir": "${sourceDir}/build_debug",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build_debug/install",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "icpx",
+                "CMAKE_Fortran_COMPILER": "ifx",
+                "CMAKE_VERBOSE_MAKEFILE": "OFF"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release",
+            "binaryDir": "${sourceDir}/build_release",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build_release/install",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_COMPILER": "icpx",
+                "CMAKE_Fortran_COMPILER": "ifx",
+                "CMAKE_VERBOSE_MAKEFILE": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug-build",
+            "displayName": "Debug Build",
+            "configurePreset": "debug",
+            "configuration": "Debug",
+            "jobs": 24
+        },
+        {
+            "name": "release-build",
+            "displayName": "Release Build",
+            "configurePreset": "release",
+            "configuration": "Release",
+            "jobs": 24
+        }
+    ], 
+    "testPresets": [
+        {
+            "configurePreset": "debug",
+            "name": "debug-test",
+            "displayName": "Debug Test",
+            "configuration": "Debug"
+        },
+        {
+            "configurePreset": "release",
+            "name": "release-test",
+            "displayName": "Release Test",
+            "configuration": "Release"
+        }
+    ]
+}

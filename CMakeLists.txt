@@ -1,12 +1,27 @@
 cmake_minimum_required(VERSION 3.31)
 
-project(FortranPlayground LANGUAGES Fortran)
+project(FortranPlayground LANGUAGES CXX Fortran)
 
 set(CMAKE_Fortran_STANDARD 2018)
 set(CMAKE_Fortran_STANDARD_REQUIRED ON)
 
-add_executable(hello_world src/main.f90 src/greet.f90)
+# Ensure proper logical representation when interfacing with C/C++
+if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fpscomp logicals")
+endif()
 
-set_target_properties(hello_world PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find googletest
+find_package(GTest REQUIRED)
+
+add_executable(hello_world src/main.f90)
+
+# Enable testing
+enable_testing()
+
+# Add test executable
+find_package(GTest CONFIG REQUIRED)
+add_subdirectory(f90tw)
+add_subdirectory(tests)
