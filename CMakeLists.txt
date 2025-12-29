@@ -16,12 +16,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find googletest
 find_package(GTest REQUIRED)
 
-add_executable(hello_world src/main.f90)
-
 # Enable testing
 enable_testing()
 
 # Add test executable
 find_package(GTest CONFIG REQUIRED)
 add_subdirectory(f90tw)
-add_subdirectory(tests)
+add_subdirectory(src/util)
+add_subdirectory(src/advent_of_code/day1)
