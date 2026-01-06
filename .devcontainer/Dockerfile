@@ -61,16 +61,6 @@ cmake --build build --target install
 popd
 EOF
 
-RUN <<"EOF"
-source /root/.bashrc
-mkdir -p /opt/f90tw
-pushd /opt/f90tw
-git clone --depth=1 https://github.com/loudove/f90tw .
-cmake -S . -B build -DBOOSTFWK=OFF -DGTESTFWK=ON -DEXAMPLES=ON -DCMAKE_CXX_COMPILER=icpx -DCMAKE_Fortran_COMPILER=ifx
-cmake --build build --target install
-popd
-EOF
-
 # Create non-root user and grant it sudo privileges:
 # See: https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
 RUN <<"EOF"

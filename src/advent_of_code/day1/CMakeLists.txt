@@ -12,4 +12,5 @@ F90TWTEST(test_day1
 
 add_executable(day1 main.f90)
 target_link_libraries(day1 PRIVATE util rotations)
-
+install(TARGETS day1 RUNTIME DESTINATION bin)
+install(FILES input.txt DESTINATION share/day1)

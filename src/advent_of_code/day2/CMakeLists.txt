@@ -12,4 +12,5 @@ F90TWTEST(test_day2
 
 add_executable(day2 main.f90)
 target_link_libraries(day2 PRIVATE ranges util)
-
+install(TARGETS day2 RUNTIME DESTINATION bin)
+install(FILES input.txt DESTINATION share/day2)
