@@ -28,7 +28,7 @@ contains
 
         allocate(temp(MAX_LINES))
         do i=1, MAX_LINES
-            read(unit, '(A1,I10)', iostat=iostat) direction, tick_count
+            read(unit, "(A1,I10)", iostat=iostat) direction, tick_count
             if (iostat < 0) then
                 exit ! End of file. Exit loop and assign rotations
             else if (iostat > 0) then
