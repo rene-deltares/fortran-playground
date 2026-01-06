@@ -92,7 +92,7 @@ contains
         integer :: i
 
         do i = 1, size(values)
-            call F90_ASSERT_TRUE(is_extra_silly_number(values(i)), "Expected value to be silly" // c_null_char)
+            call F90_ASSERT_TRUE(is_sillier_number(values(i)), "Expected value to be silly" // c_null_char)
         end do
     end subroutine test_is_silly_number
     !$f90tw )
@@ -113,8 +113,8 @@ contains
     end subroutine test_next_silly_number
     !$f90tw )
 
-    !$f90tw TESTCODE(TEST, test_day2, test_is_extra_silly_number, test_is_extra_silly_number,
-    subroutine test_is_extra_silly_number() bind(C)
+    !$f90tw TESTCODE(TEST, test_day2, test_is_sillier_number, test_is_sillier_number,
+    subroutine test_is_sillier_number() bind(C)
         use iso_c_binding, only: c_null_char
         implicit none
         integer(kind=int64), parameter :: values(*) = [111, 22222, 9999999, 121212, 123123]
@@ -123,13 +123,13 @@ contains
 
         do i = 1, size(values)
             write(message, "(A,I0)") "Expected value to be extra silly: ", values(i)
-            call F90_ASSERT_TRUE(is_extra_silly_number(values(i)), trim(message) // c_null_char)
+            call F90_ASSERT_TRUE(is_sillier_number(values(i)), trim(message) // c_null_char)
         end do
-    end subroutine test_is_extra_silly_number
+    end subroutine test_is_sillier_number
     !$f90tw )
 
-    !$f90tw TESTCODE(TEST, test_day2, test_next_extra_silly_number, test_next_extra_silly_number,
-    subroutine test_next_extra_silly_number() bind(C)
+    !$f90tw TESTCODE(TEST, test_day2, test_next_sillier_number, test_next_sillier_number,
+    subroutine test_next_sillier_number() bind(C)
         use iso_c_binding, only: c_null_char
         implicit none
         integer(kind=int64), parameter :: test(*) = [9, 99, 999, 9999, 123012, 123123, 123124]
@@ -139,15 +139,15 @@ contains
 
         do i = 1, size(test)
             expected = outcomes(i)
-            actual = next_extra_silly_number(test(i))
+            actual = next_sillier_number(test(i))
             write (message, "(A,I0)") "Expected and actual next extra silly number mismatch for: ", test(i)
             call F90_ASSERT_EQ(expected, actual, trim(message) // c_null_char)
         end do
-    end subroutine test_next_extra_silly_number
+    end subroutine test_next_sillier_number
     !$f90tw )
 
-    !$f90tw TESTCODE(TEST, test_day2, test_extra_silly_numbers_in_range, test_extra_silly_numbers_in_range,
-    subroutine test_extra_silly_numbers_in_range() bind(C)
+    !$f90tw TESTCODE(TEST, test_day2, test_silly_numbers_in_range, test_silly_numbers_in_range,
+    subroutine test_silly_numbers_in_range() bind(C)
         use iso_c_binding, only: c_null_char
         implicit none
         type(range_t), parameter :: ranges(*) = [ &
@@ -159,16 +159,16 @@ contains
         integer(kind=int64), parameter :: expected_silly_numbers(2, 11) = reshape( &
             [ &
                 11, 22, &
-                99, 111, &
-                999, 1010, &
+                99, 0, &
+                1010, 0, &
                 1188511885, 0, &
                 222222, 0, &
                 0, 0, &
                 446446, 0, &
                 38593859, 0, &
-                565656, 0, &
-                824824824, 0, &
-                2121212121, 0 &
+                0, 0, &
+                0, 0, &
+                0, 0 &
             ], [2, 11] &
         )
         type(range_t) :: current
@@ -180,34 +180,55 @@ contains
         do i = 1, size(ranges)
             current = ranges(i)
             expected = expected_silly_numbers(:,i)
-            actual = extra_silly_numbers_in_range(current)
+            actual = silly_numbers_in_range(current)
 
             abs_error = sum(abs(expected(1:size(actual)) - actual))
             call F90_ASSERT_EQ(abs_error, 0)
         end do
-    end subroutine test_extra_silly_numbers_in_range
+    end subroutine test_silly_numbers_in_range
     !$f90tw )
 
-    !$f90tw TESTCODE(TEST, test_day2, test_silly_number_sum, test_silly_number_sum,
-    subroutine test_silly_number_sum() bind(C)
+    !$f90tw TESTCODE(TEST, test_day2, test_sillier_numbers_in_range, test_sillier_numbers_in_range,
+    subroutine test_sillier_numbers_in_range() bind(C)
         use iso_c_binding, only: c_null_char
         implicit none
         type(range_t), parameter :: ranges(*) = [ &
             range_t(11, 22), range_t(95, 115), range_t(998, 1012), range_t(1188511880, 1188511890), &
             range_t(222220, 222224), range_t(1698522, 1698528), range_t(446443, 446449), &
             range_t(38593856, 38593862), range_t(565653, 565659), range_t(824824821, 824824827), &
-            range_t(2121212118, 2121212124) &
+            range_t(2121212118, 2121212124), range_t(1, 18) &
         ]
-        integer, parameter :: silly_number_sums(*) = [ &
-            33, 99, 1010, 1188511885, 222222, 0, 446446, 38593859, 0, 0, 0 &
-        ]
-        integer :: expected, actual, i
+        integer(kind=int64), parameter :: expected_silly_numbers(2, 12) = reshape( &
+            [ &
+                11, 22, &
+                99, 111, &
+                999, 1010, &
+                1188511885, 0, &
+                222222, 0, &
+                0, 0, &
+                446446, 0, &
+                38593859, 0, &
+                565656, 0, &
+                824824824, 0, &
+                2121212121, 0, &
+                11, 0 &
+            ], [2, 12] &
+        )
+        type(range_t) :: current
+        integer(kind=int64) :: expected(2)
+        integer(kind=int64), allocatable :: actual(:)
+        integer :: i, zero_index
+        integer :: abs_error
 
         do i = 1, size(ranges)
-            expected = silly_number_sums(i)
-            actual = silly_number_sum(ranges(i))
-            call F90_ASSERT_EQ(expected, actual)
+            current = ranges(i)
+            expected = expected_silly_numbers(:,i)
+            actual = sillier_numbers_in_range(current)
+
+            abs_error = sum(abs(expected(1:size(actual)) - actual))
+            call F90_ASSERT_EQ(abs_error, 0)
         end do
-    end subroutine test_silly_number_sum
+    end subroutine test_sillier_numbers_in_range
     !$f90tw )
+
 end module test_day2

@@ -16,8 +16,9 @@ module m_ranges
         integer(kind=int64) :: to
     end type range_t
 
-    public :: range_t, range_from_string, read_ranges, is_silly_number, next_silly_number, silly_number_sum, &
-        is_extra_silly_number, next_extra_silly_number, extra_silly_number_sum, extra_silly_numbers_in_range
+    public :: range_t, range_from_string, read_ranges, &
+        is_silly_number, next_silly_number, silly_numbers_in_range, &
+        is_sillier_number, next_sillier_number, sillier_numbers_in_range
 contains
     function range_from_string(str, error) result(range_)
         implicit none
@@ -85,31 +86,28 @@ contains
         end do
         ranges = temp(1:range_count)
     end subroutine read_ranges
-
-    pure function silly_number_sum(range_) result(res)
+    
+    pure function is_silly_number(n) result(res)
         implicit none
-        type(range_t), intent(in) :: range_
-        integer(kind=int64) :: res
-        integer(kind=int64) :: current, next
+        integer(kind=int64), intent(in) :: n
+        logical :: res
 
-        res = 0
-        if (is_silly_number(range_%from)) then
-            res = range_%from
+        integer(kind=int64) :: digits, half_shift, high_nibble, low_nibble
+
+        digits = digit_count(n)
+        ! Odd number of digits, so can't be silly.
+        if (mod(digits, 2) == 1) then
+            res = .false.
+            return
         end if
-        current = next_silly_number(range_%from)
-        do while (current <= range_%to)
-            res = res + current
-            current = next_silly_number(current)
-        end do
-    end function silly_number_sum
+        
+        ! Split `n` into "high order" and "low order" nibbles.
+        half_shift = 10 ** (digits / 2)
+        high_nibble = n / half_shift
+        low_nibble = mod(n, half_shift)
 
-    pure function extra_silly_number_sum(range_) result(res)
-        implicit none
-        type(range_t), intent(in) :: range_
-        integer(kind=int64) :: res
-
-        res = sum(extra_silly_numbers_in_range(range_))
-    end function extra_silly_number_sum
+        res = (high_nibble == low_nibble)
+    end function is_silly_number
 
     pure function next_silly_number(n) result(res)
         implicit none
@@ -145,29 +143,84 @@ contains
         res = (high_nibble + 1) * half_shift + (high_nibble + 1)
     end function next_silly_number
 
-    pure function is_silly_number(n) result(res)
+    pure function silly_numbers_in_range(range_) result(res)
+        implicit none
+        integer, parameter :: MAX_SILLY_NUMBERS = 1024
+        type(range_t), intent(in) :: range_
+        integer(kind=int64), allocatable :: res(:)
+        
+        integer(kind=int64) :: current
+        integer(kind=int64) :: temp(MAX_SILLY_NUMBERS)
+        integer :: count
+
+        count = 0
+        if (is_silly_number(range_%from)) then
+            count = count + 1
+            temp(count) = range_%from
+        end if
+        current = next_silly_number(range_%from)
+        do while (current <= range_%to .and. count < MAX_SILLY_NUMBERS)
+            count = count + 1
+            temp(count) = current
+            current = next_silly_number(current)
+        end do
+        res = temp(1:count)
+    end function silly_numbers_in_range
+    
+    pure function is_sillier_number(n) result(res)
         implicit none
         integer(kind=int64), intent(in) :: n
         logical :: res
+        
+        integer, parameter :: FIRST_SILLY_NUMBER = 11
+        integer(kind=int64), parameter :: factors(*) = [2, 3, 5, 7]
+        integer(kind=int64) :: shift, digits
+        integer :: i
 
-        integer(kind=int64) :: digits, half_shift, high_nibble, low_nibble
+        res = .false.
+        digits = digit_count(n)
+        do i = 1, size(factors)
+            if (mod(digits, factors(i)) == 0) then
+                res = nibbles_are_silly(n, factors(i))
+                if (res) then
+                    return
+                end if
+            end if
+        end do
+    end function is_sillier_number
+
+    pure function next_sillier_number(n) result(res)
+        implicit none
+        integer(kind=int64), intent(in) :: n
+        integer(kind=int64) :: res
+        
+        integer(kind=int64), parameter :: factors(*) = [2, 3, 5, 7]
+        integer(kind=int64) :: digits, high_nibble
+        integer :: i
 
         digits = digit_count(n)
-        ! Odd number of digits, so can't be silly.
-        if (mod(digits, 2) == 1) then
-            res = .false.
+
+        ! First check repeated nines edge case (e.g. 999)
+        if (n + 1 == 10 ** digits) then
+            res = first_sillier_number_with_digits(digits + 1)
             return
         end if
-        
-        ! Split `n` into "high order" and "low order" nibbles.
-        half_shift = 10 ** (digits / 2)
-        high_nibble = n / half_shift
-        low_nibble = mod(n, half_shift)
 
-        res = (high_nibble == low_nibble)
-    end function is_silly_number
+        ! Find the next smallest silly number.
+        res = huge(0_int64)
+        do i = 1, size(factors)
+            if (mod(digits, factors(i)) == 0) then
+                res = min(res, next_silly_nibbles(n, factors(i)))
+            end if
+        end do
 
-    pure function extra_silly_numbers_in_range(range_) result(res)
+        ! Check that res has been set. If not, `n` must be a single digit number.
+        if (res == huge(0_int64)) then
+            res = first_sillier_number_with_digits(2)
+        end if
+    end function next_sillier_number
+    
+    pure function sillier_numbers_in_range(range_) result(res)
         implicit none
         integer, parameter :: MAX_SILLY_NUMBERS = 1024
         type(range_t), intent(in) :: range_
@@ -178,76 +231,36 @@ contains
         integer :: count
 
         count = 0
-        if (is_extra_silly_number(range_%from)) then
+        if (is_sillier_number(range_%from)) then
             count = count + 1
             temp(count) = range_%from
         end if
-        current = next_extra_silly_number(range_%from)
+        current = next_sillier_number(range_%from)
         do while (current <= range_%to .and. count < MAX_SILLY_NUMBERS)
             count = count + 1
             temp(count) = current
-            current = next_extra_silly_number(current)
+            current = next_sillier_number(current)
         end do
         res = temp(1:count)
-    end function extra_silly_numbers_in_range
+    end function sillier_numbers_in_range
 
-    pure function next_extra_silly_number(n) result(res)
+    pure function first_sillier_number_with_digits(digits) result(res)
         implicit none
-        integer(kind=int64), intent(in) :: n
+        integer(kind=int64), intent(in) :: digits
         integer(kind=int64) :: res
-        
-        integer, parameter :: FIRST_SILLY_NUMBER = 11
+
         integer(kind=int64), parameter :: factors(*) = [2, 3, 5, 7]
-        integer(kind=int64) :: digits, high_nibble, min_silly
+        integer(kind=int64) :: high_nibble
         integer :: i
 
-        digits = digit_count(n)
-
-        ! First check repeated nines edge case (e.g. 999)
-        if (n + 1 == 10 ** digits) then
-            do i = 1, size(factors)
-                if (mod(digits + 1, factors(i)) == 0) then
-                    high_nibble = 10 ** ((digits + 1) / factors(i) - 1)
-                    res = repeat_nibble(high_nibble, factors(i))
-                    return
-                end if
-            end do
-        end if
-
-
-        min_silly = huge(0_int64)
         do i = 1, size(factors)
             if (mod(digits, factors(i)) == 0) then
-                min_silly = min(min_silly, next_silly_nibbles(n, factors(i)))
+                high_nibble = 10 ** (digits / factors(i) - 1)
+                res = repeat_nibble(high_nibble, factors(i))
+                return
             end if
         end do
-
-        res = min_silly
-        if (min_silly == huge(0_int64)) then
-            res = FIRST_SILLY_NUMBER ! `n` must be a single digit number.
-        end if
-    end function next_extra_silly_number
-
-    pure function is_extra_silly_number(n) result(res)
-        implicit none
-        integer(kind=int64), intent(in) :: n
-        logical :: res
-        
-        integer, parameter :: FIRST_SILLY_NUMBER = 11
-        integer(kind=int64), parameter :: factors(*) = [2, 3, 5, 7]
-        integer(kind=int64) :: shift, digits
-        integer :: i
-
-        digits = digit_count(n)
-        do i = 1, size(factors)
-            if (mod(digits, factors(i)) == 0) then
-                res = nibbles_are_silly(n, factors(i))
-                if (res) then
-                    return
-                end if
-            end if
-        end do
-    end function is_extra_silly_number
+    end function first_sillier_number_with_digits
     
     pure function nibbles_are_silly(n, part_count) result(res)
         implicit none

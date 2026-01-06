@@ -14,7 +14,7 @@ contains
         type(error_t), allocatable :: error
         integer :: i
         integer(kind=int64) :: silly_sum, total_silly_sum
-        integer(kind=int64) :: extra_silly_sum, total_extra_silly_sum
+        integer(kind=int64) :: sillier_sum, total_sillier_sum
 
         call get_command_line_arguments(path_to_input_file)
 
@@ -33,7 +33,7 @@ contains
 
         total_silly_sum = 0
         do i = 1, size(ranges)
-            silly_sum = silly_number_sum(ranges(i))
+            silly_sum = sum(silly_numbers_in_range(ranges(i)))
             print "(A,I0,A,I0,A,I0)", "Silly number sum in ", ranges(i)%from, " - ", ranges(i)%to, ": ", silly_sum
             total_silly_sum = total_silly_sum + silly_sum
         end do
@@ -41,13 +41,13 @@ contains
 
         print *, ""
 
-        total_extra_silly_sum = 0
+        total_sillier_sum = 0
         do i = 1, size(ranges)
-            extra_silly_sum = extra_silly_number_sum(ranges(i))
-            print "(A,I0,A,I0,A,I0)", "Extra silly number sum in ", ranges(i)%from, " - ", ranges(i)%to, ": ", extra_silly_sum
-            total_extra_silly_sum = total_extra_silly_sum + extra_silly_sum
+            sillier_sum = sum(sillier_numbers_in_range(ranges(i)))
+            print "(A,I0,A,I0,A,I0)", "Sillier number sum in ", ranges(i)%from, " - ", ranges(i)%to, ": ", sillier_sum
+            total_sillier_sum = total_sillier_sum + sillier_sum
         end do
-        print "(A, I0)", "Total extra silly number sum: ", total_extra_silly_sum
+        print "(A, I0)", "Total sillier number sum: ", total_sillier_sum
     end subroutine main
 
     subroutine get_command_line_arguments(path_to_input_file)
