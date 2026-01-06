@@ -13,8 +13,10 @@ contains
         type(range_t), allocatable :: ranges(:)
         type(error_t), allocatable :: error
         integer :: i
-        integer(kind=int64) :: silly_sum, total_silly_sum
-        integer(kind=int64) :: sillier_sum, total_sillier_sum
+        integer(kind=int64) :: total_silly_sum
+        integer(kind=int64) :: total_sillier_sum
+        integer(kind=int64), allocatable :: silly_numbers(:)
+        integer(kind=int64), allocatable :: sillier_numbers(:)
 
         call get_command_line_arguments(path_to_input_file)
 
@@ -33,9 +35,10 @@ contains
 
         total_silly_sum = 0
         do i = 1, size(ranges)
-            silly_sum = sum(silly_numbers_in_range(ranges(i)))
-            print "(A,I0,A,I0,A,I0)", "Silly number sum in ", ranges(i)%from, " - ", ranges(i)%to, ": ", silly_sum
-            total_silly_sum = total_silly_sum + silly_sum
+            silly_numbers = silly_numbers_in_range(ranges(i))
+            print "(A,I0,A,I0,A)", "Silly numbers in ", ranges(i)%from, " - ", ranges(i)%to, ": "
+            print *, silly_numbers
+            total_silly_sum = total_silly_sum + sum(silly_numbers)
         end do
         print "(A, I0)", "Total silly number sum: ", total_silly_sum
 
@@ -43,9 +46,10 @@ contains
 
         total_sillier_sum = 0
         do i = 1, size(ranges)
-            sillier_sum = sum(sillier_numbers_in_range(ranges(i)))
-            print "(A,I0,A,I0,A,I0)", "Sillier number sum in ", ranges(i)%from, " - ", ranges(i)%to, ": ", sillier_sum
-            total_sillier_sum = total_sillier_sum + sillier_sum
+            sillier_numbers = sillier_numbers_in_range(ranges(i))
+            print "(A,I0,A,I0,A)", "Sillier numbers in ", ranges(i)%from, " - ", ranges(i)%to, ": "
+            print *, sillier_numbers
+            total_sillier_sum = total_sillier_sum + sum(sillier_numbers)
         end do
         print "(A, I0)", "Total sillier number sum: ", total_sillier_sum
     end subroutine main
