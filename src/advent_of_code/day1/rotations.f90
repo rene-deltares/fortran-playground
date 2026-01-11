@@ -89,13 +89,13 @@ contains
         do i=1, size(rotations)
             full_rotations = abs(rotations(i)) / positions
             remaining_ticks = mod(rotations(i), positions)
-            
+
             res = res + full_rotations
             zero_crossing = .not. (0 < current + remaining_ticks .and. current + remaining_ticks < positions)
             if (current /= 0 .and. remaining_ticks /= 0 .and. zero_crossing) then
                 res = res + 1
             end if
-            
+
             current = modulo(current + remaining_ticks, positions)
         end do
     end function count_zero_crossings

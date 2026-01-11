@@ -1,0 +1,10 @@
+{
+    "cmake.useCMakePresets": "always",
+    "cmake.buildBeforeRun": true,
+    "cmake.automaticReconfigure": false,
+    "cmake.ctest.testExplorerIntegrationEnabled": true,
+    "cmake.ctest.debugLaunchTarget": "ctest",
+    "terminal.integrated.shellIntegration.enabled": false,
+	"terminal.integrated.suggest.enabled": false,
+    "editor.renderWhitespace": "trailing",
+}

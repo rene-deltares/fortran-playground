@@ -86,7 +86,7 @@ contains
         end do
         ranges = temp(1:range_count)
     end subroutine read_ranges
-    
+
     pure function is_silly_number(n) result(res)
         implicit none
         integer(kind=int64), intent(in) :: n
@@ -100,7 +100,7 @@ contains
             res = .false.
             return
         end if
-        
+
         ! Split `n` into "high order" and "low order" nibbles.
         half_shift = 10 ** (digits / 2)
         high_nibble = n / half_shift
@@ -124,7 +124,7 @@ contains
             res = 10 ** digits + half_shift
             return
         end if
-        
+
         ! Split `n` into "high order" and "low order" nibbles.
         high_nibble = n / half_shift
         low_nibble = mod(n, half_shift)
@@ -148,7 +148,7 @@ contains
         integer, parameter :: MAX_SILLY_NUMBERS = 1024
         type(range_t), intent(in) :: range_
         integer(kind=int64), allocatable :: res(:)
-        
+
         integer(kind=int64) :: current
         integer(kind=int64) :: temp(MAX_SILLY_NUMBERS)
         integer :: count
@@ -166,12 +166,12 @@ contains
         end do
         res = temp(1:count)
     end function silly_numbers_in_range
-    
+
     pure function is_sillier_number(n) result(res)
         implicit none
         integer(kind=int64), intent(in) :: n
         logical :: res
-        
+
         integer, parameter :: FIRST_SILLY_NUMBER = 11
         integer(kind=int64), parameter :: factors(*) = [2, 3, 5, 7]
         integer(kind=int64) :: shift, digits
@@ -193,7 +193,7 @@ contains
         implicit none
         integer(kind=int64), intent(in) :: n
         integer(kind=int64) :: res
-        
+
         integer(kind=int64), parameter :: factors(*) = [2, 3, 5, 7]
         integer(kind=int64) :: digits, high_nibble
         integer :: i
@@ -219,7 +219,7 @@ contains
             res = first_sillier_number_with_digits(2)
         end if
     end function next_sillier_number
-    
+
     pure function sillier_numbers_in_range(range_) result(res)
         implicit none
         integer, parameter :: MAX_SILLY_NUMBERS = 1024
@@ -261,7 +261,7 @@ contains
             end if
         end do
     end function first_sillier_number_with_digits
-    
+
     pure function nibbles_are_silly(n, part_count) result(res)
         implicit none
         integer(kind=int64), intent(in) :: n

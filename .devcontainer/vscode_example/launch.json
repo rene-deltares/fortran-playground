@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ctest",
+      "type": "cppdbg",
+      "cwd": "${cmake.testWorkingDirectory}",
+      "request": "launch",
+      "program": "${cmake.testProgram}",
+      "args": [
+        "${cmake.testArgs}"
+      ],
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb-oneapi",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": false,
+        }
+      ],
+      "stopAtEntry": false,
+    }
+  ]
+}

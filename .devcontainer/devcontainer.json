@@ -2,6 +2,7 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
+    "postCreateCommand": "bash .devcontainer/scripts/post_create_command.sh",
     "mounts": [
         // Persist the bash history into a Docker volume, so you don't lose your bash history when restarting the container.
         // See: https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history

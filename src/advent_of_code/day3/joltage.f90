@@ -32,7 +32,7 @@ contains
                 error = error_t(ERROR_READ_FAILED, message)
                 return
             end if
-            
+
             if (len_trim(line) /= 100) then
                 write(message, "(A,I0,A,I0,A)") "Invalid number of batteries in bank: ", len_trim(line), " (Expected ", BANK_SIZE, ")"
                 error = error_t(ERROR_INVALID_INPUT, message)
@@ -55,7 +55,7 @@ contains
         character(len=*), intent(in) :: bank
         integer, intent(in) :: battery_count
         integer(kind=int64) :: res
-        
+
         integer, parameter :: MAX_BATTERIES = 16
         integer :: digit_stack(MAX_BATTERIES)
         integer :: start_index

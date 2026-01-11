@@ -3,9 +3,11 @@ FROM docker.io/almalinux:10-minimal AS base
 ARG USER_UID=1000
 
 # Set bash as the default shell for RUN commands.
-SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
+SHELL ["/bin/bash", "-c"]
 
 RUN --mount=type=cache,target=/var/cache/yum <<"EOF"
+set -eo pipefail
+
 cat <<EOT > /etc/yum.repos.d/oneAPI.repo
 [oneAPI]
 name=Intel® oneAPI repository
@@ -19,10 +21,12 @@ EOT
 microdnf update --assumeyes
 microdnf install --assumeyes \
     binutils elfutils diffutils tar gzip bzip2 xz sudo make procps strace which tree curl git \
-    intel-oneapi-common-vars intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran intel-oneapi-mkl-devel intel-oneapi-mpi-devel
+    intel-oneapi-common-vars intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran
 EOF
 
 RUN --mount=type=cache,target=/var/cache/cmake <<"EOF"
+set -eo pipefail
+
 CMAKE_INSTALLER=/var/cache/cmake/cmake-3.31.9-linux-x86_64.sh
 curl -LsSf -C - -o $CMAKE_INSTALLER https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh
 mkdir -p /opt/cmake
@@ -50,6 +54,9 @@ EOF
 
 RUN --mount=type=cache,target=/var/cache/googletest <<"EOF"
 source /root/.bashrc
+
+set -eo pipefail
+
 pushd /var/cache/googletest
 if [[ $(git describe --tags --exact-match 2>/dev/null) != 'v1.17.0' ]]; then
     git clone --depth=1 --branch=v1.17.0 https://github.com/google/googletest.git .
@@ -64,6 +71,7 @@ EOF
 # Create non-root user and grant it sudo privileges:
 # See: https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
 RUN <<"EOF"
+set -eo pipefail
 useradd --uid $USER_UID -ms /bin/bash dev
 echo "dev ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/dev
 chmod 0440 /etc/sudoers.d/dev
@@ -75,6 +83,7 @@ WORKDIR /home/dev
 
 # Create mount points for bash history and MinIO credentials in the user's home directory.
 RUN <<"EOF"
+set -eo pipefail
 mkdir ~/.history ~/.aws
 touch ~/.history/.bash_history
 EOF
@@ -84,6 +93,7 @@ RUN curl -LsSf https://astral.sh/uv/0.8.4/install.sh | sh
 ENV PATH=/home/dev/.local/bin:$PATH \
     UV_LINK_MODE=copy
 RUN <<"EOF"
+set -eo pipefail
 uv python install 3.12
 uv tool install fortls
 uv tool install fprettify

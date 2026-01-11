@@ -6,5 +6,5 @@ module m_error
     type :: error_t
         integer :: code
         character(len=:), allocatable :: message
-    end type error_t    
+    end type error_t
 end module m_error
