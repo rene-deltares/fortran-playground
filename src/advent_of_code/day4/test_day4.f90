@@ -58,4 +58,45 @@ contains
         call F90_ASSERT_EQ(error%code, ERROR_INVALID_INPUT)
     end subroutine test_read_scrolls__column_mismatch
     !$f90tw )
+
+    !$f90tw TESTCODE(TEST, test_day4, test_accessible_scrolls, test_accessible_scrolls,
+    subroutine test_accessible_scrolls() bind(C)
+        implicit none
+        logical :: grid(5, 5)
+        integer, allocatable :: coordinates(:, :)
+        integer :: i
+
+        grid = .false.
+        grid(2:4, 2:4) = .true.
+        grid(3,3) = .false.
+
+        call accessible_scrolls(grid, coordinates)
+
+        call F90_ASSERT_TRUE(allocated(coordinates))
+        call F90_ASSERT_EQ(size(coordinates, 2), 4, "Expected 4 accessible scrolls" // c_null_char)
+        call F90_ASSERT_TRUE(any([(coordinates(:, i) == [2, 2], i = 1, 4)]), "Expected [2, 2] to be accessible" // c_null_char)
+        call F90_ASSERT_TRUE(any([(coordinates(:, i) == [2, 4], i = 1, 4)]), "Expected [2, 4] to be accessible" // c_null_char)
+        call F90_ASSERT_TRUE(any([(coordinates(:, i) == [4, 2], i = 1, 4)]), "Expected [2, 4] to be accessible" // c_null_char)
+        call F90_ASSERT_TRUE(any([(coordinates(:, i) == [4, 4], i = 1, 4)]), "Expected [2, 4] to be accessible" // c_null_char)
+    end subroutine test_accessible_scrolls
+    !$f90tw )
+
+    !$f90tw TESTCODE(TEST, test_day4, test_remove_scrolls, test_remove_scrolls,
+    subroutine test_remove_scrolls() bind(C)
+        implicit none
+        logical :: grid(3, 3)
+        integer :: i
+        integer, parameter :: coordinates(2, 3) = [[1, 1], [2, 2], [3, 3]]
+
+        grid = .true.
+
+        call remove_scrolls(grid, coordinates)
+
+        call F90_ASSERT_TRUE( &
+            .not. any([(grid(i, i), i = 1, 3)]), &
+            "Expected scrolls on diagonal to be removed" // c_null_char &
+        )
+        call F90_ASSERT_EQ(6, sum(merge(1, 0, grid)), "Expected all off-diagonal elements to remain.")
+    end subroutine test_remove_scrolls
+    !$f90tw )
 end module test_day4

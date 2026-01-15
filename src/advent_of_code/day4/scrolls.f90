@@ -10,7 +10,7 @@ module m_scrolls
     integer, public, parameter :: ERROR_READ_FAILED = -1
     integer, public, parameter :: ERROR_INVALID_INPUT = -2
 
-    public :: read_scrolls
+    public :: read_scrolls, accessible_scrolls, neighbor_count, remove_scrolls
 contains
     subroutine read_scrolls(unit, grid, rows, columns, error)
         implicit none
@@ -57,7 +57,7 @@ contains
                 error = error_t(ERROR_READ_FAILED, message)
                 return
             end if
-            
+
             if (len_trim(line) + 2 /= columns) then
                 write(message, "(A,I0)") "Wrong number of columns on line: ", line_count + 1
                 error = error_t(ERROR_INVALID_INPUT, message)
@@ -76,4 +76,61 @@ contains
             grid(1:rows, i) = temp_grid(1:rows, i)
         end do
     end subroutine read_scrolls
+
+    subroutine accessible_scrolls(grid, coordinates)
+        implicit none
+        logical, intent(in) :: grid(:,:)
+        integer, allocatable, intent(out) :: coordinates(:,:)
+
+        integer :: rows, columns, row, col, neighbors, count
+        integer, allocatable :: temp_coords(:,:)
+
+        rows = size(grid, 1)
+        columns = size(grid, 2)
+        allocate(temp_coords(2, rows * columns))
+
+        count = 0
+        do col = 2, columns - 1
+            do row = 2, rows - 1
+                if (.not. grid(row, col)) then
+                    cycle
+                end if
+
+                neighbors = neighbor_count(grid, row, col)
+                if (neighbors < 4) then
+                    count = count + 1
+                    temp_coords(:, count) = [row, col]
+                end if
+            end do
+        end do
+
+        coordinates = temp_coords(:, 1:count)
+    end subroutine
+
+    pure function neighbor_count(grid, row, col) result(res)
+        implicit none
+        logical, intent(in) :: grid(:, :)
+
+        logical :: mask(3, 3)
+        integer, intent(in) :: row, col
+        integer :: res
+
+        mask = grid(row - 1:row + 1, col - 1:col + 1)
+        mask(2, 2) = .false.
+        res = sum(merge(1, 0, mask)) 
+    end function neighbor_count
+
+    subroutine remove_scrolls(grid, coordinates)
+        implicit none
+        logical, intent(inout) :: grid(:, :)
+        integer, intent(in) :: coordinates(:, :)
+
+        integer :: coord(2)
+        integer :: i
+
+        do i = 1, size(coordinates, 2)
+            coord = coordinates(:, i)
+            grid(coord(1), coord(2)) = .false.
+        end do
+    end subroutine
 end module m_scrolls
