@@ -10,8 +10,16 @@
             "type": "volume",
             "source": "fortran-playground-history",
             "target": "/home/dev/.history"
+        },
+        {
+            "type": "bind",
+            "source": "${localEnv:SSH_AUTH_SOCK}",
+            "target": "/ssh-agent"
         }
     ],
+    "remoteEnv": {
+        "SSH_AUTH_SOCK": "/ssh-agent"
+    },
     "customizations": {
         "vscode": {
             "extensions": [
