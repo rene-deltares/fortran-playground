@@ -4,7 +4,8 @@ module m_inventory
     use m_comparison_sort, only: comparable_ref_t, comparable_t, merge_sort_light
     implicit none
 
-    public :: read_inventory
+    private
+    public :: read_inventory, sort_ranges, squash_ranges, operator(==)
 
     integer, parameter :: MAX_RANGES = 512
     integer, parameter :: MAX_ITEMS = 1024
@@ -24,7 +25,18 @@ module m_inventory
         type(range_t), allocatable :: ranges(:)
         integer(kind=int64), allocatable :: items(:)
     end type
+
+    interface operator(==)
+        module procedure range_equal
+    end interface
 contains
+
+    pure elemental function range_equal(a, b) result(res)
+        implicit none
+        type(range_t), intent(in) :: a, b
+        logical :: res
+        res = (a%begin == b%begin .and. a%end ==b%end)
+    end function
 
     pure elemental function sgn(n) result(res)
         implicit none
@@ -127,7 +139,7 @@ contains
         end do
 
         inventory = inventory_t( &
-            ranges=sort_ranges(temp_ranges(:range_count)), &
+            ranges=squash_ranges(sort_ranges(temp_ranges(:range_count))), &
             items=temp_items(:item_count) &
         )
     end subroutine
@@ -147,6 +159,43 @@ contains
 
         res = from_range_ref(sorted_comparables)
     end function sort_ranges
+
+    function squash_ranges(ranges) result(res)
+        implicit none
+        type(range_t), intent(in) :: ranges(:)
+        type(range_t), allocatable :: res(:)
+
+        type(range_t), allocatable :: temp(:)
+        type(range_t) :: current_greatest
+        integer :: i, range_count
+
+        if (size(ranges) == 0) then
+            allocate(res(0))
+            return
+        end if
+
+        allocate(temp(size(ranges)))
+        current_greatest = ranges(1)
+        range_count = 0
+        do i = 2, size(ranges)
+            if (current_greatest%end + 1 >= ranges(i)%begin) then ! Ranges touch or overlap.
+                current_greatest = range_t( &
+                    begin=current_greatest%begin, &
+                    end=max(current_greatest%end, ranges(i)%end) &
+                )
+            else  ! Gap between ranges.
+                range_count = range_count + 1
+                temp(range_count) = current_greatest
+                current_greatest = ranges(i)
+            end if
+        end do
+
+        range_count = range_count + 1
+        temp(range_count) = current_greatest
+
+        res = temp(:range_count)
+    end function
+
 
     subroutine parse_range(line, range, error)
         implicit none

@@ -1,4 +1,5 @@
 program day5
+    use iso_fortran_env, only: int64
     use m_error, only: error_t
     use m_inventory
     implicit none
@@ -9,6 +10,7 @@ contains
         implicit none
         character(len=:), allocatable :: path_to_input_file
         integer :: unit, iostat, fresh_items, i, j
+        integer(kind=int64) :: total_fresh_items
 
         type(error_t), allocatable :: error
         type(inventory_t), allocatable :: inventory
@@ -42,7 +44,10 @@ contains
                 end if
             end do
         end do
-        print *, "Number of fresh items found: ", fresh_items
+        print *, "Number of fresh items found in inventory: ", fresh_items
+
+        total_fresh_items = sum([(inventory%ranges(i)%end - inventory%ranges(i)%begin + 1, i=1, size(inventory%ranges))])
+        print *, "Total number of fresh items possible: ", total_fresh_items
     end subroutine main
 
     subroutine get_command_line_arguments(path_to_input_file)
